@@ -5,16 +5,28 @@ Main category: {cate}
 
 TL;DR: {tldr}
 
+Research relevance: {research_relevance}
+
+Reading priority: {reading_priority}
 
 <details>
   <summary>Details</summary>
-Motivation: {motivation}
 
-Method: {method}
+Task and scene: {task_and_scene}
 
-Result: {result}
+Model architecture: {model_architecture}
 
-Conclusion: {conclusion}
+Lightweight method: {lightweight_method}
+
+Onboard deployability: {onboard_deployability}
+
+Datasets and metrics: {datasets_and_metrics}
+
+Experiments: {experiments}
+
+Limitations: {limitations}
+
+Ideas for my research: {ideas_for_my_research}
 
 Abstract: {summary}
 
