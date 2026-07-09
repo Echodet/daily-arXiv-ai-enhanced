@@ -932,6 +932,16 @@ function parseJsonlData(jsonlText, date) {
         conclusion: paper.AI && paper.AI.conclusion ? paper.AI.conclusion : '',
         code_url: paper.code_url || '',
         code_stars: paper.code_stars || 0,
+        research_relevance: paper.AI && paper.AI.research_relevance ? paper.AI.research_relevance : '',
+        task_and_scene: paper.AI && paper.AI.task_and_scene ? paper.AI.task_and_scene : '',
+        model_architecture: paper.AI && paper.AI.model_architecture ? paper.AI.model_architecture : '',
+        lightweight_method: paper.AI && paper.AI.lightweight_method ? paper.AI.lightweight_method : '',
+        onboard_deployability: paper.AI && paper.AI.onboard_deployability ? paper.AI.onboard_deployability : '',
+        datasets_and_metrics: paper.AI && paper.AI.datasets_and_metrics ? paper.AI.datasets_and_metrics : '',
+        experiments: paper.AI && paper.AI.experiments ? paper.AI.experiments : '',
+        limitations: paper.AI && paper.AI.limitations ? paper.AI.limitations : '',
+        ideas_for_my_research: paper.AI && paper.AI.ideas_for_my_research ? paper.AI.ideas_for_my_research : '',
+        reading_priority: paper.AI && paper.AI.reading_priority ? paper.AI.reading_priority : '',
         code_last_update: paper.code_last_update || ''
       });
     } catch (error) {
@@ -1514,6 +1524,16 @@ function showPaperDetails(paper, paperIndex) {
         ${paper.method ? `<div class="paper-section"><h4>Method</h4><p>${highlightedMethod}</p></div>` : ''}
         ${paper.result ? `<div class="paper-section"><h4>Result</h4><p>${highlightedResult}</p></div>` : ''}
         ${paper.conclusion ? `<div class="paper-section"><h4>Conclusion</h4><p>${highlightedConclusion}</p></div>` : ''}
+        ${paper.research_relevance ? `<div class="paper-section"><h4>Research Relevance</h4><p>${paper.research_relevance}</p></div>` : ''}
+        ${paper.task_and_scene ? `<div class="paper-section"><h4>Task & Scene</h4><p>${paper.task_and_scene}</p></div>` : ''}
+        ${paper.model_architecture ? `<div class="paper-section"><h4>Model Architecture</h4><p>${paper.model_architecture}</p></div>` : ''}
+        ${paper.lightweight_method ? `<div class="paper-section"><h4>Lightweight Method</h4><p>${paper.lightweight_method}</p></div>` : ''}
+        ${paper.onboard_deployability ? `<div class="paper-section"><h4>Onboard Deployability</h4><p>${paper.onboard_deployability}</p></div>` : ''}
+        ${paper.datasets_and_metrics ? `<div class="paper-section"><h4>Datasets & Metrics</h4><p>${paper.datasets_and_metrics}</p></div>` : ''}
+        ${paper.experiments ? `<div class="paper-section"><h4>Experiments</h4><p>${paper.experiments}</p></div>` : ''}
+        ${paper.limitations ? `<div class="paper-section"><h4>Limitations</h4><p>${paper.limitations}</p></div>` : ''}
+        ${paper.ideas_for_my_research ? `<div class="paper-section"><h4>Ideas for My Research</h4><p>${paper.ideas_for_my_research}</p></div>` : ''}
+        ${paper.reading_priority ? `<div class="paper-section"><h4>Reading Priority</h4><p>${paper.reading_priority}</p></div>` : ''}      
       </div>
       
       ${highlightedAbstract ? `<h3>Abstract</h3><p class="original-abstract">${highlightedAbstract}</p>` : ''}
