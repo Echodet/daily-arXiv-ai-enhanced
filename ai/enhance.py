@@ -175,8 +175,10 @@ def process_all_items(data: List[Dict], model_name: str, language: str, max_work
     """并行处理所有数据项"""
     llm = ChatOpenAI(
             model=model_name,
+            temperature=0.2,
+            max_tokens=int(os.environ.get("MAX_SUMMARY_TOKENS", "1800")),
             model_kwargs={"extra_body": {"thinking": {"type": "disabled"}}}
-        ).with_structured_output(Structure, method="function_calling")
+).with_structured_output(Structure, method="function_calling")
 
     print('Connect to:', model_name, file=sys.stderr)
     
