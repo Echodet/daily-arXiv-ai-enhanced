@@ -118,10 +118,16 @@ def process_single_item(chain, item: Dict, language: str) -> Dict:
     # Default structure with meaningful fallback values
     default_ai_fields = {
         "tldr": "Summary generation failed",
-        "motivation": "Motivation analysis unavailable",
-        "method": "Method extraction failed",
-        "result": "Result analysis unavailable",
-        "conclusion": "Conclusion extraction failed"
+        "research_relevance": "Relevance analysis unavailable",
+        "task_and_scene": "Task and scene extraction unavailable",
+        "model_architecture": "Model architecture extraction unavailable",
+        "lightweight_method": "Lightweight method extraction unavailable",
+        "onboard_deployability": "Onboard deployability analysis unavailable",
+        "datasets_and_metrics": "Datasets and metrics extraction unavailable",
+        "experiments": "Experimental analysis unavailable",
+        "limitations": "Limitations analysis unavailable",
+        "ideas_for_my_research": "Research ideas unavailable",
+        "reading_priority": "Priority unavailable"
     }
     
     try:
