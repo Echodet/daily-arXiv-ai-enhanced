@@ -216,7 +216,7 @@ def process_all_items(data: List[Dict], model_name: str, language: str, max_work
 
 def main():
     args = parse_args()
-    model_name = os.environ.get("MODEL_NAME", 'deepseek-chat')
+    model_name = os.environ.get("MODEL_NAME", 'deepseek-v4-flash')
     language = os.environ.get("LANGUAGE", 'Chinese')
 
     # 检查并删除目标文件
