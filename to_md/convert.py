@@ -47,7 +47,19 @@ if __name__ == "__main__":
                     continue
                 
                 # Check if all required AI fields are present
-                required_fields = ['tldr', 'motivation', 'method', 'result', 'conclusion']
+                required_fields = [
+                    'tldr',
+                    'research_relevance',
+                    'task_and_scene',
+                    'model_architecture',
+                    'lightweight_method',
+                    'onboard_deployability',
+                    'datasets_and_metrics',
+                    'experiments',
+                    'limitations',
+                    'ideas_for_my_research',
+                    'reading_priority'
+                ]
                 if not all(field in ai_data for field in required_fields):
                     print(f"Skipping item '{item.get('title', 'Unknown')}' due to incomplete AI fields")
                     continue
@@ -64,6 +76,16 @@ if __name__ == "__main__":
                         result=ai_data.get('result', ''),
                         conclusion=ai_data.get('conclusion', ''),
                         cate=item['categories'][0],
+                        research_relevance=ai_data.get('research_relevance', ''),
+                        task_and_scene=ai_data.get('task_and_scene', ''),
+                        model_architecture=ai_data.get('model_architecture', ''),
+                        lightweight_method=ai_data.get('lightweight_method', ''),
+                        onboard_deployability=ai_data.get('onboard_deployability', ''),
+                        datasets_and_metrics=ai_data.get('datasets_and_metrics', ''),
+                        experiments=ai_data.get('experiments', ''),
+                        limitations=ai_data.get('limitations', ''),
+                        ideas_for_my_research=ai_data.get('ideas_for_my_research', ''),
+                        reading_priority=ai_data.get('reading_priority', ''),
                         idx=next(idx)
                     )
                 )
