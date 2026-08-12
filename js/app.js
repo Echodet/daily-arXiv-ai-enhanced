@@ -917,7 +917,7 @@ function parseJsonlData(jsonlText, date) {
       
       const summary = paper.AI && paper.AI.tldr ? paper.AI.tldr : paper.summary;
       const journal = paper.journal || '';
-      const source = paper.source_label || paper.source || '';
+      const source = paper.source_label || paper.source || (paper.journal ? 'Journal' : 'arXiv preprint');
       const relevanceScore = paper.relevance_score ?? '';
       
       result[primaryCategory].push({
