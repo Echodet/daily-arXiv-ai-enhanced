@@ -47,9 +47,11 @@ jobs:
         export CROSSREF_MAILTO="${{ vars.CROSSREF_MAILTO }}"
         export JOURNAL_LOOKBACK_DAYS="${{ vars.JOURNAL_LOOKBACK_DAYS }}"
         export JOURNAL_ROWS_PER_SOURCE="${{ vars.JOURNAL_ROWS_PER_SOURCE }}"
+        export ARXIV_LOOKBACK_DAYS="${{ vars.ARXIV_LOOKBACK_DAYS }}"
+        export ARXIV_RESULTS_PER_CATEGORY="${{ vars.ARXIV_RESULTS_PER_CATEGORY }}"
         
-        # arXiv supplies fresh preprints; the profile filter runs after all sources are merged.
-        scrapy crawl arxiv -o ../data/${today}.jsonl
+        # arXiv supplies fresh preprints in bounded API batches.
+        python -m daily_arxiv.collect_arxiv --output ../data/${today}.jsonl
 
         # Crossref adds selected journal metadata from the doctoral-requirements journal list.
         python -m daily_arxiv.collect_journals --output ../data/${today}.jsonl
