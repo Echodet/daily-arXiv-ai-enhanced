@@ -749,6 +749,7 @@ function parseJsonlData(jsonlText, date) {
         source: paper.source_label || paper.source || (paper.journal ? 'Journal' : 'arXiv preprint'),
         journal: paper.journal || '',
         journalTier: paper.journal_tier || '',
+        abstractSource: paper.abstract_source || '',
         relevanceScore: paper.relevance_score ?? '',
         researchRelevance: paper.AI && paper.AI.research_relevance ? paper.AI.research_relevance : '',
         taskAndScene: paper.AI && paper.AI.task_and_scene ? paper.AI.task_and_scene : '',

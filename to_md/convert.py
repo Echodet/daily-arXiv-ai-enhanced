@@ -34,6 +34,13 @@ def journal_line(item: dict) -> str:
     return f"; journal: {journal}{tier_label}"
 
 
+def abstract_source_line(item: dict) -> str:
+    source = item.get("abstract_source", "")
+    if not source:
+        return ""
+    return f"; abstract: {source}"
+
+
 def format_authors(authors: object) -> str:
     if isinstance(authors, list):
         return ",".join(str(author) for author in authors)
@@ -91,6 +98,7 @@ def main() -> None:
                     url=item.get("abs") or item.get("pdf", ""),
                     source=item.get("source_label", item.get("source", "Unknown")),
                     journal_line=journal_line(item),
+                    abstract_source_line=abstract_source_line(item),
                     relevance_score=item.get("relevance_score", "N/A"),
                     cate=item["categories"][0],
                     idx=next(index),

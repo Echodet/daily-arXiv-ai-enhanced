@@ -28,6 +28,11 @@ def normalize_text(paper: dict[str, Any]) -> str:
     return " ".join(str(field) for field in fields if field).casefold()
 
 
+def normalize_title(paper: dict[str, Any]) -> str:
+    """Return the title alone for main-task relevance checks."""
+    return str(paper.get("title", "")).casefold()
+
+
 def _contains_term(text: str, term: str) -> bool:
     normalized_term = term.casefold().strip()
     if not normalized_term:
@@ -62,21 +67,39 @@ def score_paper(paper: dict[str, Any], profile: dict[str, Any]) -> tuple[int, li
     return score, matches
 
 
-def meets_required_groups(paper: dict[str, Any], profile: dict[str, Any]) -> bool:
-    """Require at least one matched term from every configured group set."""
-    text = normalize_text(paper)
+def _required_group_matches(
+    text: str, profile: dict[str, Any], requirement_key: str
+) -> list[str] | None:
+    """Return evidence for every configured requirement, or ``None`` on failure."""
     keyword_groups = profile.get("keyword_groups", {})
+    requirement_matches: list[str] = []
 
-    for alternatives in profile.get("require_groups", []):
-        group_matched = False
+    for alternatives in profile.get(requirement_key, []):
+        matched_alternatives: list[str] = []
         for group_name in alternatives:
             group = keyword_groups.get(group_name, {})
-            if any(_contains_term(text, term) for term in group.get("terms", [])):
-                group_matched = True
-                break
-        if not group_matched:
-            return False
-    return True
+            terms = [
+                term for term in group.get("terms", []) if _contains_term(text, term)
+            ]
+            if terms:
+                matched_alternatives.append(f"{group_name}: {', '.join(terms[:3])}")
+        if not matched_alternatives:
+            return None
+        requirement_matches.append("; ".join(matched_alternatives))
+
+    return requirement_matches
+
+
+def meets_required_groups(paper: dict[str, Any], profile: dict[str, Any]) -> bool:
+    """Require remote-sensing and detection evidence across the record fields."""
+    return _required_group_matches(normalize_text(paper), profile, "require_groups") is not None
+
+
+def title_focus_matches(paper: dict[str, Any], profile: dict[str, Any]) -> list[str] | None:
+    """Require task evidence in the title, not only a background mention in an abstract."""
+    return _required_group_matches(
+        normalize_title(paper), profile, "title_require_groups"
+    )
 
 
 def enrich_and_filter(
@@ -97,8 +120,15 @@ def enrich_and_filter(
         paper["relevance_score"] = score
         paper["relevance_matches"] = matches
         paper["research_profile"] = profile.get("profile_name", "custom")
+        title_matches = title_focus_matches(paper, profile)
+        if title_matches:
+            paper["title_relevance_matches"] = title_matches
 
-        if score >= minimum_score and meets_required_groups(paper, profile):
+        if (
+            score >= minimum_score
+            and meets_required_groups(paper, profile)
+            and title_matches is not None
+        ):
             selected.append(paper)
 
     selected.sort(

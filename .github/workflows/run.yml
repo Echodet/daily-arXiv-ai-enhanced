@@ -49,6 +49,9 @@ jobs:
         export JOURNAL_ROWS_PER_SOURCE="${{ vars.JOURNAL_ROWS_PER_SOURCE }}"
         export ARXIV_LOOKBACK_DAYS="${{ vars.ARXIV_LOOKBACK_DAYS }}"
         export ARXIV_RESULTS_PER_CATEGORY="${{ vars.ARXIV_RESULTS_PER_CATEGORY }}"
+        export OPENALEX_MAILTO="${{ vars.OPENALEX_MAILTO }}"
+        export JOURNAL_ABSTRACT_ENRICHMENT_LIMIT="${{ vars.JOURNAL_ABSTRACT_ENRICHMENT_LIMIT }}"
+        export OPENALEX_REQUEST_DELAY_SECONDS="${{ vars.OPENALEX_REQUEST_DELAY_SECONDS }}"
         
         # arXiv supplies fresh preprints in bounded API batches.
         python -m daily_arxiv.collect_arxiv --output ../data/${today}.jsonl
@@ -58,6 +61,9 @@ jobs:
 
         # Keep only papers that match the focused remote-sensing research profile.
         python -m daily_arxiv.filter_papers --data ../data/${today}.jsonl
+
+        # Enrich selected journal records when Crossref metadata lacks an abstract.
+        python -m daily_arxiv.enrich_journal_abstracts --data ../data/${today}.jsonl
         
         # 检查爬取是否成功 / Check if crawling was successful
         if [ ! -f "../data/${today}.jsonl" ]; then

@@ -7,6 +7,9 @@
     ["remote_sensing"],
     ["object_detection"]
   ],
+  "title_require_groups": [
+    ["object_detection"]
+  ],
   "keyword_groups": {
     "remote_sensing": {
       "weight": 5,

@@ -108,6 +108,7 @@ def crossref_item_to_paper(item: dict[str, Any], journal: dict[str, Any]) -> dic
         "categories": [f"Journal: {journal_title}"],
         "summary": abstract_text,
         "abstract_available": bool(abstract),
+        "abstract_source": "Crossref" if abstract else "Unavailable",
         "abs": canonical_url(item),
         "pdf": "",
         "published_date": published_date(item),

@@ -109,6 +109,7 @@ def process_single_item(chain, item: Dict, language: str) -> Dict:
             f"Title: {item.get('title', '')}",
             f"Source: {item.get('source_label', item.get('source', ''))}",
             f"Journal: {item.get('journal', '')}",
+            f"Abstract provenance: {item.get('abstract_source', '')}",
             f"Categories: {category_text}",
             f"Deterministic relevance score: {item.get('relevance_score', '')}",
             f"Matched research-profile terms: {match_text}",

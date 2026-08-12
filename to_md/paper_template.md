@@ -3,7 +3,7 @@
 
 Main category: {cate}
 
-Source: {source}{journal_line}
+Source: {source}{journal_line}{abstract_source_line}
 
 Research relevance score: {relevance_score}
 

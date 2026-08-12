@@ -933,6 +933,7 @@ function parseJsonlData(jsonlText, date) {
         source: source,
         journal: journal,
         journalTier: paper.journal_tier || '',
+        abstractSource: paper.abstract_source || '',
         relevanceScore: relevanceScore,
         relevanceMatches: Array.isArray(paper.relevance_matches) ? paper.relevance_matches.join('; ') : '',
         researchRelevance: paper.AI && paper.AI.research_relevance ? paper.AI.research_relevance : '',
@@ -1545,6 +1546,7 @@ function showPaperDetails(paper, paperIndex) {
       ${paper.publicationDate ? `<p><strong>Publication date: </strong>${formatDate(paper.publicationDate)}</p>` : ''}
       ${paper.source ? `<p><strong>Source: </strong>${paper.source}</p>` : ''}
       ${journalInfo ? `<p><strong>Journal: </strong>${journalInfo}</p>` : ''}
+      ${paper.abstractSource ? `<p><strong>Abstract source: </strong>${paper.abstractSource}</p>` : ''}
       ${paper.relevanceScore !== '' ? `<p><strong>Relevance score: </strong>${paper.relevanceScore}${paper.relevanceMatches ? ` (${paper.relevanceMatches})` : ''}</p>` : ''}
       ${paper.readingPriority ? `<p><strong>Reading priority: </strong>${paper.readingPriority}</p>` : ''}
       
