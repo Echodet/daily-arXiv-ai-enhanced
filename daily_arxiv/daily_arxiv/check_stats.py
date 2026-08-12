@@ -13,6 +13,14 @@ import sys
 import os
 from datetime import datetime, timedelta
 
+
+def get_today():
+    """Use the workflow's UTC crawl date when it is available."""
+    configured_date = os.environ.get("CRAWL_DATE", "")
+    if configured_date:
+        return datetime.strptime(configured_date, "%Y-%m-%d")
+    return datetime.now()
+
 def load_papers_data(file_path):
     """
     从jsonl文件中加载完整的论文数据
@@ -73,8 +81,10 @@ def perform_deduplication():
              - "error": 处理错误 / Processing error
     """
 
-    today = datetime.now().strftime("%Y-%m-%d")
+    today_date = get_today()
+    today = today_date.strftime("%Y-%m-%d")
     today_file = f"../data/{today}.jsonl"
+    history_data_dir = os.environ.get("HISTORY_DATA_DIR", "../data")
     history_days = 7  # 向前追溯几天的数据进行对比
 
     if not os.path.exists(today_file):
@@ -91,8 +101,8 @@ def perform_deduplication():
         # 收集历史多日 ID 集合
         history_ids = set()
         for i in range(1, history_days + 1):
-            date_str = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
-            history_file = f"../data/{date_str}.jsonl"
+            date_str = (today_date - timedelta(days=i)).strftime("%Y-%m-%d")
+            history_file = os.path.join(history_data_dir, f"{date_str}.jsonl")
             _, past_ids = load_papers_data(history_file)
             history_ids.update(past_ids)
 
@@ -162,4 +172,4 @@ def main():
         sys.exit(2)
 
 if __name__ == "__main__":
-    main() 
+    main()

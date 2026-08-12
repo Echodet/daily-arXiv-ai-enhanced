@@ -2326,3 +2326,10 @@ footer {
   display: flex;
   align-items: center;
 }
+
+.paper-card-meta {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}

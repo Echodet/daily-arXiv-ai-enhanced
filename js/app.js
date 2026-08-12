@@ -916,6 +916,9 @@ function parseJsonlData(jsonlText, date) {
       }
       
       const summary = paper.AI && paper.AI.tldr ? paper.AI.tldr : paper.summary;
+      const journal = paper.journal || '';
+      const source = paper.source_label || paper.source || '';
+      const relevanceScore = paper.relevance_score ?? '';
       
       result[primaryCategory].push({
         title: paper.title,
@@ -925,23 +928,25 @@ function parseJsonlData(jsonlText, date) {
         summary: summary,
         details: paper.summary || '',
         date: date,
+        publicationDate: paper.published_date || '',
         id: paper.id,
-        motivation: paper.AI && paper.AI.motivation ? paper.AI.motivation : '',
-        method: paper.AI && paper.AI.method ? paper.AI.method : '',
-        result: paper.AI && paper.AI.result ? paper.AI.result : '',
-        conclusion: paper.AI && paper.AI.conclusion ? paper.AI.conclusion : '',
-        code_url: paper.code_url || '',
-        code_stars: paper.code_stars || 0,
-        research_relevance: paper.AI && paper.AI.research_relevance ? paper.AI.research_relevance : '',
-        task_and_scene: paper.AI && paper.AI.task_and_scene ? paper.AI.task_and_scene : '',
-        model_architecture: paper.AI && paper.AI.model_architecture ? paper.AI.model_architecture : '',
-        lightweight_method: paper.AI && paper.AI.lightweight_method ? paper.AI.lightweight_method : '',
-        onboard_deployability: paper.AI && paper.AI.onboard_deployability ? paper.AI.onboard_deployability : '',
-        datasets_and_metrics: paper.AI && paper.AI.datasets_and_metrics ? paper.AI.datasets_and_metrics : '',
+        source: source,
+        journal: journal,
+        journalTier: paper.journal_tier || '',
+        relevanceScore: relevanceScore,
+        relevanceMatches: Array.isArray(paper.relevance_matches) ? paper.relevance_matches.join('; ') : '',
+        researchRelevance: paper.AI && paper.AI.research_relevance ? paper.AI.research_relevance : '',
+        taskAndScene: paper.AI && paper.AI.task_and_scene ? paper.AI.task_and_scene : '',
+        modelArchitecture: paper.AI && paper.AI.model_architecture ? paper.AI.model_architecture : '',
+        lightweightMethod: paper.AI && paper.AI.lightweight_method ? paper.AI.lightweight_method : '',
+        onboardDeployability: paper.AI && paper.AI.onboard_deployability ? paper.AI.onboard_deployability : '',
+        datasetsAndMetrics: paper.AI && paper.AI.datasets_and_metrics ? paper.AI.datasets_and_metrics : '',
         experiments: paper.AI && paper.AI.experiments ? paper.AI.experiments : '',
         limitations: paper.AI && paper.AI.limitations ? paper.AI.limitations : '',
-        ideas_for_my_research: paper.AI && paper.AI.ideas_for_my_research ? paper.AI.ideas_for_my_research : '',
-        reading_priority: paper.AI && paper.AI.reading_priority ? paper.AI.reading_priority : '',
+        ideasForMyResearch: paper.AI && paper.AI.ideas_for_my_research ? paper.AI.ideas_for_my_research : '',
+        readingPriority: paper.AI && paper.AI.reading_priority ? paper.AI.reading_priority : '',
+        code_url: paper.code_url || '',
+        code_stars: paper.code_stars || 0,
         code_last_update: paper.code_last_update || ''
       });
     } catch (error) {
@@ -1142,10 +1147,16 @@ function renderPapers() {
         Array.isArray(a.category) ? a.category.join(', ') : a.category,
         a.summary,
         a.details || '',
-        a.motivation || '',
-        a.method || '',
-        a.result || '',
-        a.conclusion || ''
+        a.researchRelevance || '',
+        a.taskAndScene || '',
+        a.modelArchitecture || '',
+        a.lightweightMethod || '',
+        a.onboardDeployability || '',
+        a.datasetsAndMetrics || '',
+        a.experiments || '',
+        a.limitations || '',
+        a.ideasForMyResearch || '',
+        a.readingPriority || ''
       ].join(' ').toLowerCase();
       const hayB = [
         b.title,
@@ -1153,10 +1164,16 @@ function renderPapers() {
         Array.isArray(b.category) ? b.category.join(', ') : b.category,
         b.summary,
         b.details || '',
-        b.motivation || '',
-        b.method || '',
-        b.result || '',
-        b.conclusion || ''
+        b.researchRelevance || '',
+        b.taskAndScene || '',
+        b.modelArchitecture || '',
+        b.lightweightMethod || '',
+        b.onboardDeployability || '',
+        b.datasetsAndMetrics || '',
+        b.experiments || '',
+        b.limitations || '',
+        b.ideasForMyResearch || '',
+        b.readingPriority || ''
       ].join(' ').toLowerCase();
       const am = hayA.includes(q);
       const bm = hayB.includes(q);
@@ -1173,10 +1190,16 @@ function renderPapers() {
         Array.isArray(p.category) ? p.category.join(', ') : p.category,
         p.summary,
         p.details || '',
-        p.motivation || '',
-        p.method || '',
-        p.result || '',
-        p.conclusion || ''
+        p.researchRelevance || '',
+        p.taskAndScene || '',
+        p.modelArchitecture || '',
+        p.lightweightMethod || '',
+        p.onboardDeployability || '',
+        p.datasetsAndMetrics || '',
+        p.experiments || '',
+        p.limitations || '',
+        p.ideasForMyResearch || '',
+        p.readingPriority || ''
       ].join(' ').toLowerCase();
       const matched = hay.includes(q);
       p.isMatched = matched;
@@ -1420,10 +1443,11 @@ function renderPapers() {
         </div>
       </div>
       <div class="paper-card-body">
+        ${paper.relevanceScore !== '' ? `<div class="paper-card-meta">Relevance ${paper.relevanceScore}${paper.readingPriority ? ` | Priority ${paper.readingPriority}` : ''}</div>` : ''}
         <p class="paper-card-summary">${highlightedSummary}</p>
         <div class="paper-card-footer">
           <div class="footer-left">
-            <span class="paper-card-date">${formatDate(paper.date)}</span>
+            <span class="paper-card-date">${paper.publicationDate ? `Published ${formatDate(paper.publicationDate)}` : formatDate(paper.date)}</span>
           </div>
           <span class="paper-card-link">Details</span>
         </div>
@@ -1486,22 +1510,26 @@ function showPaperDetails(paper, paperIndex) {
     ? highlightMatches(abstractText, modalTitleTerms, 'keyword-highlight') 
     : abstractText;
   
-  // 高亮其他部分（如果存在且是摘要的一部分）
-  const highlightedMotivation = paper.motivation && modalTitleTerms.length > 0 
-    ? highlightMatches(paper.motivation, modalTitleTerms, 'keyword-highlight') 
-    : paper.motivation;
-  
-  const highlightedMethod = paper.method && modalTitleTerms.length > 0 
-    ? highlightMatches(paper.method, modalTitleTerms, 'keyword-highlight') 
-    : paper.method;
-  
-  const highlightedResult = paper.result && modalTitleTerms.length > 0 
-    ? highlightMatches(paper.result, modalTitleTerms, 'keyword-highlight') 
-    : paper.result;
-  
-  const highlightedConclusion = paper.conclusion && modalTitleTerms.length > 0 
-    ? highlightMatches(paper.conclusion, modalTitleTerms, 'keyword-highlight') 
-    : paper.conclusion;
+  const researchSections = [
+    ['Research relevance', paper.researchRelevance],
+    ['Task and scene', paper.taskAndScene],
+    ['Model architecture', paper.modelArchitecture],
+    ['Lightweight method', paper.lightweightMethod],
+    ['Onboard deployability', paper.onboardDeployability],
+    ['Datasets and metrics', paper.datasetsAndMetrics],
+    ['Experiments', paper.experiments],
+    ['Limitations', paper.limitations],
+    ['Ideas for my research', paper.ideasForMyResearch]
+  ].filter(([, value]) => value).map(([title, value]) => {
+    const content = modalTitleTerms.length > 0
+      ? highlightMatches(value, modalTitleTerms, 'keyword-highlight')
+      : value;
+    return `<div class="paper-section"><h4>${title}</h4><p>${content}</p></div>`;
+  }).join('');
+
+  const journalInfo = paper.journal
+    ? `${paper.journal}${paper.journalTier ? ` (${paper.journalTier} tier)` : ''}`
+    : '';
   
   // 判断是否需要显示高亮说明
   const showHighlightLegend = activeKeywords.length > 0 || activeAuthors.length > 0;
@@ -1514,31 +1542,23 @@ function showPaperDetails(paper, paperIndex) {
       <p><strong>Authors: </strong>${highlightedAuthors}</p>
       <p><strong>Categories: </strong>${categoryDisplay}</p>
       <p><strong>Date: </strong>${formatDate(paper.date)}</p>
+      ${paper.publicationDate ? `<p><strong>Publication date: </strong>${formatDate(paper.publicationDate)}</p>` : ''}
+      ${paper.source ? `<p><strong>Source: </strong>${paper.source}</p>` : ''}
+      ${journalInfo ? `<p><strong>Journal: </strong>${journalInfo}</p>` : ''}
+      ${paper.relevanceScore !== '' ? `<p><strong>Relevance score: </strong>${paper.relevanceScore}${paper.relevanceMatches ? ` (${paper.relevanceMatches})` : ''}</p>` : ''}
+      ${paper.readingPriority ? `<p><strong>Reading priority: </strong>${paper.readingPriority}</p>` : ''}
       
       
       <h3>TL;DR</h3>
       <p>${highlightedSummary}</p>
       
       <div class="paper-sections">
-        ${paper.motivation ? `<div class="paper-section"><h4>Motivation</h4><p>${highlightedMotivation}</p></div>` : ''}
-        ${paper.method ? `<div class="paper-section"><h4>Method</h4><p>${highlightedMethod}</p></div>` : ''}
-        ${paper.result ? `<div class="paper-section"><h4>Result</h4><p>${highlightedResult}</p></div>` : ''}
-        ${paper.conclusion ? `<div class="paper-section"><h4>Conclusion</h4><p>${highlightedConclusion}</p></div>` : ''}
-        ${paper.research_relevance ? `<div class="paper-section"><h4>Research Relevance</h4><p>${paper.research_relevance}</p></div>` : ''}
-        ${paper.task_and_scene ? `<div class="paper-section"><h4>Task & Scene</h4><p>${paper.task_and_scene}</p></div>` : ''}
-        ${paper.model_architecture ? `<div class="paper-section"><h4>Model Architecture</h4><p>${paper.model_architecture}</p></div>` : ''}
-        ${paper.lightweight_method ? `<div class="paper-section"><h4>Lightweight Method</h4><p>${paper.lightweight_method}</p></div>` : ''}
-        ${paper.onboard_deployability ? `<div class="paper-section"><h4>Onboard Deployability</h4><p>${paper.onboard_deployability}</p></div>` : ''}
-        ${paper.datasets_and_metrics ? `<div class="paper-section"><h4>Datasets & Metrics</h4><p>${paper.datasets_and_metrics}</p></div>` : ''}
-        ${paper.experiments ? `<div class="paper-section"><h4>Experiments</h4><p>${paper.experiments}</p></div>` : ''}
-        ${paper.limitations ? `<div class="paper-section"><h4>Limitations</h4><p>${paper.limitations}</p></div>` : ''}
-        ${paper.ideas_for_my_research ? `<div class="paper-section"><h4>Ideas for My Research</h4><p>${paper.ideas_for_my_research}</p></div>` : ''}
-        ${paper.reading_priority ? `<div class="paper-section"><h4>Reading Priority</h4><p>${paper.reading_priority}</p></div>` : ''}      
+        ${researchSections}
       </div>
       
       ${highlightedAbstract ? `<h3>Abstract</h3><p class="original-abstract">${highlightedAbstract}</p>` : ''}
       
-      <div class="pdf-preview-section">
+      ${paper.source === 'arXiv preprint' ? `<div class="pdf-preview-section">
         <div class="pdf-header">
           <h3>PDF Preview</h3>
           <button class="pdf-expand-btn" onclick="togglePdfSize(this)">
@@ -1553,15 +1573,15 @@ function showPaperDetails(paper, paperIndex) {
         <div class="pdf-container">
           <iframe src="${paper.url.replace('abs', 'pdf')}" width="100%" height="800px" frameborder="0"></iframe>
         </div>
-      </div>
+      </div>` : ''}
     </div>
   `;
   
   // Update modal content
   document.getElementById('modalBody').innerHTML = modalContent;
   document.getElementById('paperLink').href = paper.url;
-  document.getElementById('pdfLink').href = paper.url.replace('abs', 'pdf');
-  document.getElementById('htmlLink').href = paper.url.replace('abs', 'html');
+  document.getElementById('pdfLink').href = paper.source === 'arXiv preprint' ? paper.url.replace('abs', 'pdf') : paper.url;
+  document.getElementById('htmlLink').href = paper.source === 'arXiv preprint' ? paper.url.replace('abs', 'html') : paper.url;
   
   // --- GitHub Button Logic ---
   const githubLink = document.getElementById('githubLink');
@@ -1576,7 +1596,8 @@ function showPaperDetails(paper, paperIndex) {
   // ---------------------------
 
   // 提示词来自：https://papers.cool/
-  prompt = `请你阅读这篇文章${paper.url.replace('abs', 'pdf')},总结一下这篇文章解决的问题、相关工作、研究方法、做了什么实验及其结果、结论，最后整体总结一下这篇文章的内容`
+  const readingUrl = paper.source === 'arXiv preprint' ? paper.url.replace('abs', 'pdf') : paper.url;
+  prompt = `请你阅读这篇文章${readingUrl},总结一下这篇文章解决的问题、相关工作、研究方法、做了什么实验及其结果、结论，最后整体总结一下这篇文章的内容`
   document.getElementById('kimiChatLink').href = `https://www.kimi.com/_prefill_chat?prefill_prompt=${prompt}&system_prompt=你是一个学术助手，后面的对话将围绕着以下论文内容进行，已经通过链接给出了论文的PDF和论文已有的FAQ。用户将继续向你咨询论文的相关问题，请你作出专业的回答，不要出现第一人称，当涉及到分点回答时，鼓励你以markdown格式输出。&send_immediately=true&force_search=true`;
   
   // 更新论文位置信息

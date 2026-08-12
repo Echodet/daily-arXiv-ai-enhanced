@@ -746,10 +746,20 @@ function parseJsonlData(jsonlText, date) {
         details: paper.summary || '',
         date: date,
         id: paper.id,
-        motivation: paper.AI && paper.AI.motivation ? paper.AI.motivation : '',
-        method: paper.AI && paper.AI.method ? paper.AI.method : '',
-        result: paper.AI && paper.AI.result ? paper.AI.result : '',
-        conclusion: paper.AI && paper.AI.conclusion ? paper.AI.conclusion : ''
+        source: paper.source_label || paper.source || '',
+        journal: paper.journal || '',
+        journalTier: paper.journal_tier || '',
+        relevanceScore: paper.relevance_score ?? '',
+        researchRelevance: paper.AI && paper.AI.research_relevance ? paper.AI.research_relevance : '',
+        taskAndScene: paper.AI && paper.AI.task_and_scene ? paper.AI.task_and_scene : '',
+        modelArchitecture: paper.AI && paper.AI.model_architecture ? paper.AI.model_architecture : '',
+        lightweightMethod: paper.AI && paper.AI.lightweight_method ? paper.AI.lightweight_method : '',
+        onboardDeployability: paper.AI && paper.AI.onboard_deployability ? paper.AI.onboard_deployability : '',
+        datasetsAndMetrics: paper.AI && paper.AI.datasets_and_metrics ? paper.AI.datasets_and_metrics : '',
+        experiments: paper.AI && paper.AI.experiments ? paper.AI.experiments : '',
+        limitations: paper.AI && paper.AI.limitations ? paper.AI.limitations : '',
+        ideasForMyResearch: paper.AI && paper.AI.ideas_for_my_research ? paper.AI.ideas_for_my_research : '',
+        readingPriority: paper.AI && paper.AI.reading_priority ? paper.AI.reading_priority : ''
       });
     } catch (error) {
       console.error('解析JSON行失败:', error, line);

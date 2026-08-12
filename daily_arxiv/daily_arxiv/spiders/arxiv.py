@@ -64,6 +64,8 @@ class ArxivSpider(scrapy.Spider):
                     yield {
                         "id": arxiv_id,
                         "categories": list(paper_categories),  # 添加分类信息用于调试
+                        "source": "arxiv",
+                        "source_label": "arXiv preprint",
                     }
                     self.logger.info(f"Found paper {arxiv_id} with categories {paper_categories}")
                 else:
@@ -74,4 +76,6 @@ class ArxivSpider(scrapy.Spider):
                 yield {
                     "id": arxiv_id,
                     "categories": [],
+                    "source": "arxiv",
+                    "source_label": "arXiv preprint",
                 }

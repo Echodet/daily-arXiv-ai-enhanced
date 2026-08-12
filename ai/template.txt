@@ -1,16 +1,11 @@
-请分析下面这篇论文摘要，并站在“遥感卫星在轨目标检测与模型轻量化”研究方向上给出结构化解读。
+Analyze the following research-paper source for a doctoral researcher working on onboard remote-sensing satellite object detection and model lightweighting.
 
-要求：
-1. 不要泛泛总结；
-2. 必须判断它和遥感/卫星/在轨部署/目标检测/轻量化的关系；
-5 分：遥感/卫星 + 目标检测 + 轻量化/部署 三者强相关。
-4 分：遥感/卫星 + 目标检测强相关，但轻量化信息不足。
-3 分：检测或轻量化方法有借鉴意义，但不是遥感场景。
-2 分：泛视觉/泛机器学习方法，弱相关。
-1 分：与本研究方向基本无关。
-3. 保留英文术语，例如 object detection, remote sensing, pruning, quantization, knowledge distillation, FLOPs；
-4. 如果信息不足，请写“摘要未说明”；
-5. 如果论文与本研究方向弱相关，也要说明弱相关原因。
+Requirements:
+1. Fill every structured field with concise but substantive content.
+2. Distinguish stated evidence from your assessment. Do not invent datasets, results, hardware, or deployment claims.
+3. For low-relevance papers, explain precisely why their relevance is limited and give a low reading priority.
+4. When the source text says that an abstract is unavailable, say "Abstract does not specify" for technical details that cannot be verified.
+5. Use a reading priority of 5 only when the paper directly combines remote sensing or satellite/aerial imagery with object detection and either lightweighting or deployment.
 
-论文摘要：
+Source text:
 {content}

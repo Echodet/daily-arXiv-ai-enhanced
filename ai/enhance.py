@@ -31,10 +31,52 @@ def parse_args():
     """解析命令行参数"""
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=str, required=True, help="jsonline data file")
-    parser.add_argument("--max_workers", type=int, default=1, help="Maximum number of parallel workers")
+    parser.add_argument(
+        "--max_workers",
+        type=int,
+        default=int(os.environ.get("MAX_AI_WORKERS") or "1"),
+        help="Maximum number of parallel workers",
+    )
     return parser.parse_args()
 
 def process_single_item(chain, item: Dict, language: str) -> Dict:
+    sensitive_check_enabled = os.environ.get(
+        "ENABLE_SENSITIVE_CHECK", "false"
+    ).casefold() in {"1", "true", "yes"}
+
+    def metadata_only_ai_fields() -> Dict:
+        title = item.get("title", "This journal record")
+        journal = item.get("journal", "the configured journal")
+        unavailable = "Crossref metadata does not provide an abstract."
+        if language.casefold().startswith("chinese"):
+            unavailable = "Crossref 元数据未提供摘要，无法据此确认技术细节。"
+            return {
+                "tldr": f"《{title}》是来自《{journal}》的期刊元数据记录，尚未获得可分析的摘要。",
+                "research_relevance": "题名匹配当前研究画像；请先在 DOI 或出版社页面核验其与遥感目标检测、轻量化或星上部署的实际关系。",
+                "task_and_scene": unavailable,
+                "model_architecture": unavailable,
+                "lightweight_method": unavailable,
+                "onboard_deployability": unavailable,
+                "datasets_and_metrics": unavailable,
+                "experiments": unavailable,
+                "limitations": "没有摘要或全文时，不能把该记录作为技术结论的依据。",
+                "ideas_for_my_research": "打开 DOI/出版社页面获取摘要，再决定是否加入全文精读队列。",
+                "reading_priority": "3/5：仅题名层面匹配，必须先核验摘要。",
+            }
+        return {
+            "tldr": f"{title} is a metadata-only record from {journal}.",
+            "research_relevance": "The title matched the configured research profile; verify relevance from the DOI or publisher page.",
+            "task_and_scene": unavailable,
+            "model_architecture": unavailable,
+            "lightweight_method": unavailable,
+            "onboard_deployability": unavailable,
+            "datasets_and_metrics": unavailable,
+            "experiments": unavailable,
+            "limitations": "Do not treat this record as evidence until the paper abstract or full text is read.",
+            "ideas_for_my_research": "Open the DOI/publisher page and decide whether to add the paper to the full-text reading queue.",
+            "reading_priority": "3/5: title-level match only; abstract verification required.",
+        }
+
     def is_sensitive(content: str) -> bool:
         """
         调用 spam.dw-dengwei.workers.dev 接口检测内容是否包含敏感词。
@@ -49,14 +91,31 @@ def process_single_item(chain, item: Dict, language: str) -> Dict:
             if resp.status_code == 200:
                 result = resp.json()
                 # 约定接口返回 {"sensitive": true/false, ...}
-                return result.get("sensitive", True)
+                return result.get("sensitive", False)
             else:
-                # 如果接口异常，默认不触发敏感词
+                # A service outage must not silently discard a research paper.
                 print(f"Sensitive check failed with status {resp.status_code}", file=sys.stderr)
-                return True
+                return False
         except Exception as e:
             print(f"Sensitive check error: {e}", file=sys.stderr)
-            return True
+            return False
+
+    def build_source_content() -> str:
+        categories = item.get("categories", [])
+        category_text = ", ".join(categories) if isinstance(categories, list) else str(categories)
+        relevance_matches = item.get("relevance_matches", [])
+        match_text = "; ".join(relevance_matches) if isinstance(relevance_matches, list) else str(relevance_matches)
+        metadata = [
+            f"Title: {item.get('title', '')}",
+            f"Source: {item.get('source_label', item.get('source', ''))}",
+            f"Journal: {item.get('journal', '')}",
+            f"Categories: {category_text}",
+            f"Deterministic relevance score: {item.get('relevance_score', '')}",
+            f"Matched research-profile terms: {match_text}",
+            "Abstract:",
+            item.get("summary", ""),
+        ]
+        return "\n".join(line for line in metadata if line is not None)
 
     def check_github_code(content: str) -> Dict:
         """提取并验证 GitHub 链接"""
@@ -106,7 +165,11 @@ def process_single_item(chain, item: Dict, language: str) -> Dict:
         return code_info
 
     # 检查 summary 字段
-    if is_sensitive(item.get("summary", "")):
+    if item.get("source") == "crossref" and not item.get("abstract_available", False):
+        item["AI"] = metadata_only_ai_fields()
+        return item
+
+    if sensitive_check_enabled and is_sensitive(item.get("summary", "")):
         return None
 
     # 检测代码可用性
@@ -127,13 +190,13 @@ def process_single_item(chain, item: Dict, language: str) -> Dict:
         "experiments": "Experimental analysis unavailable",
         "limitations": "Limitations analysis unavailable",
         "ideas_for_my_research": "Research ideas unavailable",
-        "reading_priority": "Priority unavailable"
+        "reading_priority": "Priority unavailable",
     }
     
     try:
         response: Structure = chain.invoke({
             "language": language,
-            "content": item['summary']
+            "content": build_source_content(),
         })
         item['AI'] = response.model_dump()
     except langchain_core.exceptions.OutputParserException as e:
@@ -165,20 +228,21 @@ def process_single_item(chain, item: Dict, language: str) -> Dict:
         if field not in item['AI']:
             item['AI'][field] = default_ai_fields[field]
 
-    # 检查 AI 生成的所有字段
-    for v in item.get("AI", {}).values():
-        if is_sensitive(str(v)):
-            return None
+    if sensitive_check_enabled:
+        for value in item.get("AI", {}).values():
+            if is_sensitive(str(value)):
+                return None
+
     return item
 
 def process_all_items(data: List[Dict], model_name: str, language: str, max_workers: int) -> List[Dict]:
     """并行处理所有数据项"""
     llm = ChatOpenAI(
-            model=model_name,
-            temperature=0.2,
-            max_tokens=int(os.environ.get("MAX_SUMMARY_TOKENS", "1800")),
-            model_kwargs={"extra_body": {"thinking": {"type": "disabled"}}}
-).with_structured_output(Structure, method="function_calling")
+        model=model_name,
+        temperature=0.2,
+        max_tokens=int(os.environ.get("MAX_SUMMARY_TOKENS") or "1800"),
+        model_kwargs={"extra_body": {"thinking": {"type": "disabled"}}},
+    ).with_structured_output(Structure, method="function_calling")
 
     print('Connect to:', model_name, file=sys.stderr)
     
@@ -214,18 +278,24 @@ def process_all_items(data: List[Dict], model_name: str, language: str, max_work
                 processed_data[idx] = data[idx]
                 processed_data[idx]['AI'] = {
                     "tldr": "Processing failed",
-                    "motivation": "Processing failed",
-                    "method": "Processing failed",
-                    "result": "Processing failed",
-                    "conclusion": "Processing failed"
+                    "research_relevance": "Processing failed",
+                    "task_and_scene": "Processing failed",
+                    "model_architecture": "Processing failed",
+                    "lightweight_method": "Processing failed",
+                    "onboard_deployability": "Processing failed",
+                    "datasets_and_metrics": "Processing failed",
+                    "experiments": "Processing failed",
+                    "limitations": "Processing failed",
+                    "ideas_for_my_research": "Processing failed",
+                    "reading_priority": "Processing failed",
                 }
     
     return processed_data
 
 def main():
     args = parse_args()
-    model_name = os.environ.get("MODEL_NAME", 'deepseek-v4-flash')
-    language = os.environ.get("LANGUAGE", 'Chinese')
+    model_name = os.environ.get("MODEL_NAME") or "deepseek-chat"
+    language = os.environ.get("LANGUAGE") or "Chinese"
 
     # 检查并删除目标文件
     target_file = args.data.replace('.jsonl', f'_AI_enhanced_{language}.jsonl')

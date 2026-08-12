@@ -3,6 +3,10 @@
 
 Main category: {cate}
 
+Source: {source}{journal_line}
+
+Research relevance score: {relevance_score}
+
 TL;DR: {tldr}
 
 Research relevance: {research_relevance}
